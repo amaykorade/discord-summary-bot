@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         Object.assign(session.user, {
-          id: token.id ?? session.user.id,
+          id: token.id,
           name: token.name ?? session.user.name,
           email: token.email ?? session.user.email,
           image: token.picture ?? session.user.image,
