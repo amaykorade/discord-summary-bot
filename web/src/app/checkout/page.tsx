@@ -5,6 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface RazorpayInstance {
+  on: (event: string, handler: () => void) => void;
+  open: () => void;
+}
+
 declare global {
   interface Window {
     Razorpay?: new (options: {
@@ -19,7 +24,7 @@ declare global {
         razorpay_order_id: string;
         razorpay_signature: string;
       }) => void;
-    }) => void;
+    }) => RazorpayInstance;
   }
 }
 
