@@ -2,14 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
-import { AddToDiscordButton } from "./AddToDiscordButton";
-
-const DISCORD_ADD_URL =
-  process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
-    ? `https://discord.com/api/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=277025508352&scope=bot%20applications.commands`
-    : "/";
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname();
@@ -27,7 +21,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 }
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -41,17 +35,11 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const right = session?.user ? (
-    <>
-      <a
-        href={DISCORD_ADD_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-lg bg-[#5865F2] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4752c4]"
-      >
-        Add to Server
-      </a>
-      <div className="relative" ref={menuRef}>
+  const right =
+    status === "loading" ? (
+      <div className="h-9 w-20 animate-pulse rounded-lg bg-slate-800" />
+    ) : session?.user ? (
+    <div className="relative" ref={menuRef}>
         <button
           onClick={() => setUserMenuOpen(!userMenuOpen)}
           className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition hover:bg-slate-800/50"
@@ -101,9 +89,13 @@ export function Navbar() {
           </div>
         )}
       </div>
-    </>
   ) : (
-    <AddToDiscordButton className="!py-2 !px-4 text-sm" />
+    <button
+      onClick={() => signIn("discord")}
+      className="rounded-lg bg-[#5865F2] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4752c4]"
+    >
+      Login with Discord
+    </button>
   );
 
   return (
