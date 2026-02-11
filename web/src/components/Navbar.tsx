@@ -91,7 +91,7 @@ export function Navbar() {
       </div>
   ) : (
     <button
-      onClick={() => signIn("discord")}
+      onClick={() => signIn("discord", { callbackUrl: window.location.origin + "/dashboard" })}
       className="rounded-lg bg-[#5865F2] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4752c4]"
     >
       Login with Discord

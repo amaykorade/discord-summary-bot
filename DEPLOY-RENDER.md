@@ -91,7 +91,8 @@ DATABASE_URL="your-neon-url" npx prisma db push
 | `DISCORD_CLIENT_ID` | Your Discord Application ID | |
 | `DISCORD_CLIENT_SECRET` | Your Discord OAuth2 Client Secret | |
 | `NEXTAUTH_SECRET` | Random string | e.g. `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | `https://smartmod-web.onrender.com` | Use your actual Render URL |
+| `NEXTAUTH_URL` | `https://YOUR-SERVICE.onrender.com` | **Must match your Render URL exactly** (no trailing slash) |
+| `AUTH_TRUST_HOST` | `true` | **Required for Render** - enables proxy trust |
 | `NEXT_PUBLIC_DISCORD_CLIENT_ID` | Same as `DISCORD_CLIENT_ID` | |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Razorpay Key ID | |
 | `RAZORPAY_KEY_SECRET` | Razorpay Key Secret | |
@@ -188,6 +189,14 @@ DATABASE_URL="your-neon-url" npx prisma db push
 
 - Verify `RAZORPAY_WEBHOOK_SECRET` matches the secret in Razorpay Dashboard.
 - Ensure the webhook URL is exactly `https://YOUR-URL/api/webhooks/razorpay`.
+
+### Login shows "Login" instead of account after Discord OAuth
+
+- **NEXTAUTH_URL** must be exactly `https://YOUR-RENDER-URL.onrender.com` (no trailing slash, use your actual URL)
+- **AUTH_TRUST_HOST** must be `true` (add as env var in Render)
+- In Discord Developer Portal → OAuth2 → Redirects, add: `https://YOUR-RENDER-URL/api/auth/callback/discord`
+- Clear cookies and try again after fixing env vars
+- Redeploy after changing env vars
 
 ### Free tier spin-down
 
