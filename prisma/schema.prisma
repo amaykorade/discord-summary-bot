@@ -1,0 +1,56 @@
+// SmartMod Summary Bot - Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator clientWeb {
+  provider = "prisma-client-js"
+  output   = "../web/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  serverId  String   @map("server_id")
+  channelId String   @map("channel_id")
+  userId    String   @map("user_id")
+  username  String
+  content   String
+  isToxic   Boolean  @default(false) @map("is_toxic")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([serverId, createdAt])
+  @@index([serverId, isToxic])
+  @@index([channelId, createdAt])
+  @@index([userId])
+  @@map("messages")
+}
+
+model Server {
+  id                String    @id @default(cuid())
+  serverId          String    @unique @map("server_id")
+  name              String    @default("")
+  plan              String    @default("FREE") // FREE | STARTER | PRO - Stripe will update via webhooks
+  summaryChannelId  String?   @map("summary_channel_id")
+  summaryHour       Int       @default(0) @map("summary_hour") // 0-23, hour to run daily summary
+  summaryTimezone   String    @default("UTC") @map("summary_timezone") // IANA timezone e.g. "America/New_York"
+  lastSummaryAt     DateTime? @map("last_summary_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([plan])
+  @@map("servers")
+}
+
+model SummaryRun {
+  id        String   @id @default(cuid())
+  serverId  String   @map("server_id")
+  runAt     DateTime @default(now()) @map("run_at")
+
+  @@index([serverId, runAt])
+  @@map("summary_runs")
+}
