@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -19,15 +21,16 @@ export const metadata: Metadata = {
     "Collect messages, generate daily AI summaries, detect toxicity, and send reports to your Discord server admins. Add to your server in one click.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getServerSession(authOptions);
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );
