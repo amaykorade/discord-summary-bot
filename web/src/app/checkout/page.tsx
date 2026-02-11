@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 
 interface RazorpayInstance {
@@ -33,7 +33,7 @@ const PLAN_LABELS: Record<string, string> = {
   PRO: "PRO ($39/mo)",
 };
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -218,5 +218,17 @@ export default function CheckoutPage() {
         </p>
       </main>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="animate-pulse text-slate-400">Loading...</div>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
