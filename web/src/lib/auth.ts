@@ -7,6 +7,7 @@ if (typeof process.env.NEXTAUTH_URL === "string" && process.env.NEXTAUTH_URL.end
 }
 
 export const authOptions: NextAuthOptions = {
+  debug: process.env.NODE_ENV === "production",
   // false avoids __Host-/__Secure- prefixes that can cause OAuthCallback errors behind Render's proxy
   useSecureCookies: false,
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
@@ -43,6 +44,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  pages: { signIn: "/" },
+  pages: { signIn: "/", error: "/auth/error" },
   secret: process.env.NEXTAUTH_SECRET,
+  // Explicit cookie config to help with Render PKCE code_verifier persistence
+  cookies: {
+    pkceCodeVerifier: {
+      name: "next-auth.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false,
+        maxAge: 60 * 15,
+      },
+    },
+  },
 };

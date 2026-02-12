@@ -55,6 +55,7 @@ Go to Render Dashboard → Your Web Service → Environment.
 1. **Check the URL you're redirected to** – Any `?error=` in the URL means Discord rejected the callback.
 2. **DevTools → Application → Cookies** – After redirect, do you see `__Secure-next-auth.session-token` or `next-auth.session-token`?
 3. **Visit `/api/auth/session`** – Logged in = `{"user":{...}}`, not logged in = `{}`.
+4. **Check Render logs during login** – Debug mode is on in production. Render Dashboard → Your service → Logs. Retry login and look for `[NextAuth]` or `PKCE code_verifier` errors.
 
 ## 5. Discord redirect URI must match exactly
 
@@ -67,3 +68,12 @@ https://smartmod-web.onrender.com/api/auth/callback/discord
 - No trailing slash
 - No double slashes
 - Must be **https**
+
+## 6. OAuthCallback / PKCE code_verifier issues
+
+If you see `?error=OAuthCallback` and no session cookie:
+
+- **Cause**: The `next-auth.pkce.code_verifier` cookie may not persist when redirecting from Discord back to your app (known on Render/Vercel).
+- **Check**: In DevTools → Application → Cookies, right after clicking "Login with Discord" (before redirect), look for `next-auth.pkce.code_verifier`. If it's missing, the cookie isn't being set.
+- **Fix to try**: Use a **custom domain** (e.g. `app.yourdomain.com`) instead of `*.onrender.com`. `onrender.com` is on the public suffixes list, which can affect cookie behavior.
+- **Logs**: Render logs will show the exact error (e.g. "PKCE code_verifier cookie was missing").
