@@ -2,6 +2,12 @@
 
 If Discord login works locally but **not on production**, verify these:
 
+## 0. Diagnostic – Check Your Config
+
+Visit: `https://YOUR-RENDER-URL/api/auth/config-check`
+
+This shows whether NEXTAUTH_URL, AUTH_TRUST_HOST, etc. are set correctly.
+
 ## 1. Render Environment Variables (Web Service)
 
 Go to Render Dashboard → Your Web Service → Environment.
