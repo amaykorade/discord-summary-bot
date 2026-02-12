@@ -7,7 +7,8 @@ if (typeof process.env.NEXTAUTH_URL === "string" && process.env.NEXTAUTH_URL.end
 }
 
 export const authOptions: NextAuthOptions = {
-  useSecureCookies: process.env.NODE_ENV === "production",
+  // false avoids __Host-/__Secure- prefixes that can cause OAuthCallback errors behind Render's proxy
+  useSecureCookies: false,
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   providers: [
     DiscordProvider({

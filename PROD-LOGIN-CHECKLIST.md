@@ -2,7 +2,14 @@
 
 If Discord login works locally but **not on production**, verify these:
 
-## 0. Diagnostic – Check Your Config
+## 0. Clear ALL cookies first
+
+You had `next-auth.callback-url` with `localhost:3003` – stale cookies cause OAuthCallback errors.
+
+**Chrome**: DevTools → Application → Cookies → `smartmod-web.onrender.com` → right‑click → Clear  
+**Or** use an Incognito window for a fresh test.
+
+## 0b. Diagnostic – Check Your Config
 
 Visit: `https://YOUR-RENDER-URL/api/auth/config-check`
 
