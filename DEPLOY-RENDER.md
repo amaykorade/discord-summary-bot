@@ -2,6 +2,20 @@
 
 This guide walks you through deploying the Discord bot + Next.js web app on [Render](https://render.com). You'll create **two services**: a Web Service for the dashboard and a Background Worker for the bot.
 
+## Login works locally but not in production?
+
+Ensure these **exact** env vars in Render → Web Service → Environment:
+
+| Variable | Value |
+|----------|-------|
+| `NEXTAUTH_URL` | `https://YOUR-SERVICE.onrender.com` (your exact URL, no trailing slash) |
+| `AUTH_TRUST_HOST` | `true` |
+
+And in **Discord Developer Portal** → OAuth2 → Redirects, add:
+`https://YOUR-SERVICE.onrender.com/api/auth/callback/discord`
+
+Save, redeploy, then clear cookies and try again.
+
 ---
 
 ## Prerequisites
