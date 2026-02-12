@@ -10,7 +10,7 @@ function AuthErrorContent() {
 
   const messages: Record<string, string> = {
     OAuthCallback:
-      "Discord login failed. If you see 429 Too Many Requests in logs, Discord is rate-limiting — wait 1–2 minutes and try again. Otherwise check Render logs for details.",
+      "Discord login failed. If you see 429 Too Many Requests in logs, Discord is rate-limiting — wait 1–2 minutes and try again.",
     OAuthCreateAccount: "Could not create user account.",
     Callback:
       "Discord login failed. If you see 429 in logs, wait 1–2 minutes and try again.",
@@ -24,7 +24,7 @@ function AuthErrorContent() {
     (error && messages[error]) ??
     (isRateLimit
       ? "Discord is rate-limiting. Wait 1–2 minutes and try again."
-      : "An authentication error occurred. Check Render logs for details.");
+      : "An authentication error occurred.");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-4 text-white">
@@ -37,7 +37,7 @@ function AuthErrorContent() {
         {(error === "OAuthCallback" || isRateLimit) && (
           <ul className="mt-4 list-inside list-disc space-y-1 text-sm text-slate-400">
             <li>429 Too Many Requests → wait 1–2 min, then retry</li>
-            <li>Check Render logs for other errors</li>
+            <li>Check deployment logs for details</li>
           </ul>
         )}
         <Link

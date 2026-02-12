@@ -7,7 +7,7 @@ if (typeof process.env.NEXTAUTH_URL === "string" && process.env.NEXTAUTH_URL.end
 }
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === "production",
+  debug: false,
   // false avoids __Host-/__Secure- prefixes that can cause OAuthCallback errors behind Render's proxy
   useSecureCookies: false,
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
       token: {
         url: "https://discord.com/api/oauth2/token",
         async request({ client, provider, params, checks }) {
-          const maxRetries = 3;
+          const maxRetries = 5;
           let lastError: unknown;
           for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
               const msg = String((err as Error)?.message ?? "");
               const is429 = msg.includes("429");
               if (is429 && attempt < maxRetries) {
-                const waitMs = 2000 * attempt;
+                const waitMs = Math.min(15000 * attempt, 60000);
                 await new Promise((r) => setTimeout(r, waitMs));
               } else {
                 throw err;
@@ -74,7 +74,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { signIn: "/", error: "/auth/error" },
   secret: process.env.NEXTAUTH_SECRET,
-  // Explicit cookie config to help with Render PKCE code_verifier persistence
   cookies: {
     pkceCodeVerifier: {
       name: "next-auth.pkce.code_verifier",

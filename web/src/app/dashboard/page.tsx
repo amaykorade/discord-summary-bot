@@ -99,6 +99,29 @@ export default function DashboardPage() {
             <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm text-slate-300">/set-summary-channel</code>{" "}
             in each to configure.
           </p>
+          {servers.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-sm text-slate-500">Your plans:</span>
+              {["PRO", "STARTER", "FREE"].map((plan) => {
+                const count = servers.filter((s) => s.plan === plan).length;
+                if (count === 0) return null;
+                const style =
+                  plan === "PRO"
+                    ? "bg-[#5865F2]/20 text-[#5865F2]"
+                    : plan === "STARTER"
+                      ? "bg-emerald-500/15 text-emerald-400"
+                      : "bg-slate-800 text-slate-400";
+                return (
+                  <span
+                    key={plan}
+                    className={`rounded-md px-2 py-0.5 text-xs font-medium ${style}`}
+                  >
+                    {plan} × {count}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {servers.length === 0 ? (

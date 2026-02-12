@@ -73,6 +73,10 @@ https://smartmod-web.onrender.com/api/auth/callback/discord
 
 If you see `?error=OAuthCallback`:
 
-- **429 Too Many Requests** (most common): Discord is rate-limiting the token exchange. **Wait 1–2 minutes** and try again. Retry logic (3 attempts with backoff) is built in.
-- **PKCE code_verifier missing**: Cookie persistence issue. Try a custom domain instead of `*.onrender.com`.
+- **429 Too Many Requests** (most common): Discord rate-limits the token endpoint. On Render (shared IP), this can persist. Retry logic (5 attempts, up to 60s delay) is built in.
+- **If 429 persists**: Discord may have long rate-limit windows on shared IPs. Try:
+  - **Deploy to Vercel** (free) — different IP pool
+  - **Create a new Discord OAuth app** — fresh app = fresh rate limit
+  - **Render paid plan** — may offer dedicated outbound IP
+- **PKCE code_verifier missing**: Cookie persistence issue. Try a custom domain.
 - **Logs**: Render logs show the exact error.

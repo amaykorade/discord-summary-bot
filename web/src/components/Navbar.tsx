@@ -20,9 +20,17 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
+const PLAN_ORDER = { PRO: 3, STARTER: 2, FREE: 1 };
+
+function getHighestPlan(plans: string[]): string {
+  if (plans.length === 0) return "FREE";
+  return plans.reduce((a, b) => (PLAN_ORDER[a as keyof typeof PLAN_ORDER] >= PLAN_ORDER[b as keyof typeof PLAN_ORDER] ? a : b));
+}
+
 export function Navbar() {
   const { data: session, status } = useSession();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [highestPlan, setHighestPlan] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +42,21 @@ export function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (session && (session as { accessToken?: string }).accessToken) {
+      fetch("/api/servers")
+        .then((r) => r.json())
+        .then((data) => {
+          const servers = Array.isArray(data) ? data : [];
+          const plans = servers.map((s: { plan?: string }) => s.plan ?? "FREE");
+          setHighestPlan(getHighestPlan(plans));
+        })
+        .catch(() => setHighestPlan("FREE"));
+    } else {
+      setHighestPlan(null);
+    }
+  }, [session]);
 
   const right =
     status === "loading" ? (
@@ -76,6 +99,13 @@ export function Navbar() {
               <p className="truncate text-xs text-slate-500">
                 {session.user.email ?? "Discord user"}
               </p>
+              {highestPlan && (
+                <p className="mt-2">
+                  <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-300">
+                    Plan: {highestPlan}
+                  </span>
+                </p>
+              )}
             </div>
             <button
               onClick={() => signOut()}
