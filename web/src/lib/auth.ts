@@ -1,7 +1,13 @@
 import type { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
+// Ensure no trailing slash - causes double slash in callback URL
+if (typeof process.env.NEXTAUTH_URL === "string" && process.env.NEXTAUTH_URL.endsWith("/")) {
+  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL.replace(/\/+$/, "");
+}
+
 export const authOptions: NextAuthOptions = {
+  useSecureCookies: process.env.NODE_ENV === "production",
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   providers: [
     DiscordProvider({

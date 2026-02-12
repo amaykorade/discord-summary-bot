@@ -41,10 +41,22 @@ Go to Render Dashboard → Your Web Service → Environment.
 3. **Clear cookies** for your site (or use incognito)
 4. Try login again
 
-## 4. Quick Test
+## 4. Debug steps
 
-Visit: `https://YOUR-URL/api/auth/session`
+**After clicking "Login with Discord" and authorizing:**
 
-- If logged in: you should see `{"user":{...}}`
-- If not logged in: you should see `{}`
-- If you get an error: check Render logs for details
+1. **Check the URL you're redirected to** – Any `?error=` in the URL means Discord rejected the callback.
+2. **DevTools → Application → Cookies** – After redirect, do you see `__Secure-next-auth.session-token` or `next-auth.session-token`?
+3. **Visit `/api/auth/session`** – Logged in = `{"user":{...}}`, not logged in = `{}`.
+
+## 5. Discord redirect URI must match exactly
+
+In Discord Developer Portal → OAuth2 → Redirects, you must have:
+
+```
+https://smartmod-web.onrender.com/api/auth/callback/discord
+```
+
+- No trailing slash
+- No double slashes
+- Must be **https**
