@@ -18,6 +18,34 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: { scope: "identify guilds" },
       },
+      token: {
+        url: "https://discord.com/api/oauth2/token",
+        async request({ client, provider, params, checks }) {
+          const maxRetries = 3;
+          let lastError: unknown;
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+              const tokens = await client.oauthCallback(
+                provider.callbackUrl,
+                params,
+                checks
+              );
+              return { tokens };
+            } catch (err) {
+              lastError = err;
+              const msg = String((err as Error)?.message ?? "");
+              const is429 = msg.includes("429");
+              if (is429 && attempt < maxRetries) {
+                const waitMs = 2000 * attempt;
+                await new Promise((r) => setTimeout(r, waitMs));
+              } else {
+                throw err;
+              }
+            }
+          }
+          throw lastError;
+        },
+      },
     }),
   ],
   callbacks: {

@@ -69,11 +69,10 @@ https://smartmod-web.onrender.com/api/auth/callback/discord
 - No double slashes
 - Must be **https**
 
-## 6. OAuthCallback / PKCE code_verifier issues
+## 6. OAuthCallback errors
 
-If you see `?error=OAuthCallback` and no session cookie:
+If you see `?error=OAuthCallback`:
 
-- **Cause**: The `next-auth.pkce.code_verifier` cookie may not persist when redirecting from Discord back to your app (known on Render/Vercel).
-- **Check**: In DevTools → Application → Cookies, right after clicking "Login with Discord" (before redirect), look for `next-auth.pkce.code_verifier`. If it's missing, the cookie isn't being set.
-- **Fix to try**: Use a **custom domain** (e.g. `app.yourdomain.com`) instead of `*.onrender.com`. `onrender.com` is on the public suffixes list, which can affect cookie behavior.
-- **Logs**: Render logs will show the exact error (e.g. "PKCE code_verifier cookie was missing").
+- **429 Too Many Requests** (most common): Discord is rate-limiting the token exchange. **Wait 1–2 minutes** and try again. Retry logic (3 attempts with backoff) is built in.
+- **PKCE code_verifier missing**: Cookie persistence issue. Try a custom domain instead of `*.onrender.com`.
+- **Logs**: Render logs show the exact error.
