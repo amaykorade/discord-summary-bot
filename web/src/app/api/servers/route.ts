@@ -25,8 +25,12 @@ export async function GET() {
   }
   const guilds = await getGuilds(accessToken);
 
-  const ADMIN_PERMISSION = BigInt(0x8);
-  const adminGuilds = guilds.filter((g) => (BigInt(g.permissions) & ADMIN_PERMISSION) === ADMIN_PERMISSION);
+  const ADMINISTRATOR = BigInt(0x8);
+  const MANAGE_GUILD = BigInt(0x20);
+  const adminGuilds = guilds.filter((g) => {
+    const perms = BigInt(g.permissions);
+    return (perms & ADMINISTRATOR) === ADMINISTRATOR || (perms & MANAGE_GUILD) === MANAGE_GUILD;
+  });
 
   const serverIds = adminGuilds.map((g) => g.id);
   const servers = await prisma.server.findMany({
