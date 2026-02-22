@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
+import { useServers } from "./ServersContext";
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,9 +30,13 @@ function getHighestPlan(plans: string[]): string {
 
 export function Navbar() {
   const { data: session, status } = useSession();
+  const { servers } = useServers();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [highestPlan, setHighestPlan] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const highestPlan = session
+    ? getHighestPlan(servers.map((s) => s.plan ?? "FREE"))
+    : null;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -42,21 +47,6 @@ export function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (session && (session as { accessToken?: string }).accessToken) {
-      fetch("/api/servers")
-        .then((r) => r.json())
-        .then((data) => {
-          const servers = Array.isArray(data) ? data : [];
-          const plans = servers.map((s: { plan?: string }) => s.plan ?? "FREE");
-          setHighestPlan(getHighestPlan(plans));
-        })
-        .catch(() => setHighestPlan("FREE"));
-    } else {
-      setHighestPlan(null);
-    }
-  }, [session]);
 
   const right =
     status === "loading" ? (

@@ -7,11 +7,15 @@ export const dynamic = "force-dynamic";
 
 const DISCORD_API = "https://discord.com/api/v10";
 
-async function getGuilds(accessToken: string) {
+async function getGuilds(accessToken: string): Promise<{ id: string; name: string; permissions: string }[] | { error: string; status: number }> {
   const res = await fetch(`${DISCORD_API}/users/@me/guilds`, {
     headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { error: body || `Discord API returned ${res.status}`, status: res.status };
+  }
   return res.json() as Promise<{ id: string; name: string; permissions: string }[]>;
 }
 
@@ -25,11 +29,19 @@ export async function GET() {
   if (!accessToken) {
     return NextResponse.json({ error: "No access token" }, { status: 401 });
   }
-  const guilds = await getGuilds(accessToken);
+  const guildsResult = await getGuilds(accessToken);
+
+  if (!Array.isArray(guildsResult)) {
+    console.error("[/api/servers] Discord API error:", guildsResult);
+    return NextResponse.json(
+      { error: `Discord API error ${guildsResult.status}: ${guildsResult.error}` },
+      { status: guildsResult.status === 401 ? 401 : 502 }
+    );
+  }
 
   const ADMINISTRATOR = BigInt(0x8);
   const MANAGE_GUILD = BigInt(0x20);
-  const adminGuilds = guilds.filter((g) => {
+  const adminGuilds = guildsResult.filter((g) => {
     const perms = BigInt(g.permissions);
     return (perms & ADMINISTRATOR) === ADMINISTRATOR || (perms & MANAGE_GUILD) === MANAGE_GUILD;
   });

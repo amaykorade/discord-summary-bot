@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import { Navbar } from "./Navbar";
+import { ServersProvider } from "./ServersContext";
 
 export function Providers({
   children,
@@ -17,8 +18,10 @@ export function Providers({
       refetchInterval={5 * 60}
       refetchOnWindowFocus={true}
     >
-      <Navbar />
-      {children}
+      <ServersProvider>
+        <Navbar />
+        {children}
+      </ServersProvider>
     </SessionProvider>
   );
 }

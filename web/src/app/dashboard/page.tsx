@@ -3,6 +3,7 @@
 import { useSession, signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useServers } from "@/components/ServersContext";
 
 interface Server {
   id: string;
@@ -25,32 +26,7 @@ const DISCORD_ADD_URL = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
-  const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session) return;
-
-    setLoading(true);
-    setFetchError(null);
-    fetch("/api/servers", { cache: "no-store" })
-      .then(async (r) => {
-        const data = await r.json();
-        if (!r.ok) {
-          setFetchError(data?.error ?? `Error ${r.status}`);
-          setServers([]);
-        } else {
-          setServers(Array.isArray(data) ? data : []);
-        }
-      })
-      .catch((err) => {
-        setFetchError(err?.message ?? "Failed to load servers");
-        setServers([]);
-      })
-      .finally(() => setLoading(false));
-  }, [session, status]);
+  const { servers, loading, error: fetchError, refresh } = useServers();
 
   if (status === "loading" || (status === "authenticated" && loading)) {
     return (
@@ -106,7 +82,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white sm:text-3xl">Your Servers</h1>
             <button
-              onClick={() => { setLoading(true); setFetchError(null); fetch("/api/servers", { cache: "no-store" }).then(async (r) => { const data = await r.json(); if (!r.ok) { setFetchError(data?.error ?? `Error ${r.status}`); setServers([]); } else { setServers(Array.isArray(data) ? data : []); } }).catch((err) => { setFetchError(err?.message ?? "Failed"); setServers([]); }).finally(() => setLoading(false)); }}
+              onClick={refresh}
               className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-400 hover:border-slate-500 hover:text-white transition"
             >
               Refresh
