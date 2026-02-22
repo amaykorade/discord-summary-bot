@@ -50,12 +50,45 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user }) {
-      if (account?.access_token) token.accessToken = account.access_token;
+      // On first login, store access token, refresh token, and expiry
+      if (account) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        // Discord tokens expire in 604800s (7 days); store expiry with 1 min buffer
+        token.accessTokenExpires = Date.now() + (Number(account.expires_in ?? 604800) - 60) * 1000;
+      }
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
         token.picture = user.image;
+      }
+
+      // Token still valid
+      if (Date.now() < (token.accessTokenExpires as number ?? 0)) return token;
+
+      // Token expired — refresh it
+      try {
+        const res = await fetch("https://discord.com/api/oauth2/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            client_id: process.env.DISCORD_CLIENT_ID!,
+            client_secret: process.env.DISCORD_CLIENT_SECRET!,
+            grant_type: "refresh_token",
+            refresh_token: token.refreshToken as string,
+          }),
+        });
+        const refreshed = await res.json();
+        if (!res.ok) throw refreshed;
+        token.accessToken = refreshed.access_token;
+        token.refreshToken = refreshed.refresh_token ?? token.refreshToken;
+        token.accessTokenExpires = Date.now() + (Number(refreshed.expires_in ?? 604800) - 60) * 1000;
+      } catch {
+        // Refresh failed — clear token so user is prompted to re-login
+        token.accessToken = undefined;
+        token.refreshToken = undefined;
+        token.accessTokenExpires = 0;
       }
       return token;
     },
