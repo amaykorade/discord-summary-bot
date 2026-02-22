@@ -26,7 +26,7 @@ const DISCORD_ADD_URL = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
-  const { servers, loading, error: fetchError, refresh } = useServers();
+  const { servers, loading, error: fetchError, needsReauth, refresh } = useServers();
 
   if (status === "loading" || (status === "authenticated" && loading)) {
     return (
@@ -118,7 +118,18 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {fetchError && (
+        {needsReauth && (
+          <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400 flex items-center justify-between gap-4">
+            <span>Your session has expired. Please sign in again to view your servers.</span>
+            <button
+              onClick={() => signIn("discord")}
+              className="shrink-0 rounded-lg bg-[#5865F2] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#4752c4] transition"
+            >
+              Sign in again
+            </button>
+          </div>
+        )}
+        {fetchError && !needsReauth && (
           <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             Error loading servers: {fetchError}
           </div>

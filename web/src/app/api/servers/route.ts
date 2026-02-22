@@ -21,14 +21,21 @@ async function getGuilds(accessToken: string): Promise<{ id: string; name: strin
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session || !(session as { accessToken?: string }).accessToken) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const accessToken = (session as { accessToken?: string }).accessToken;
-  if (!accessToken) {
-    return NextResponse.json({ error: "No access token" }, { status: 401 });
+  const s = session as { accessToken?: string; error?: string };
+
+  if (s.error === "RefreshAccessTokenError" || s.error === "RefreshTokenMissing") {
+    return NextResponse.json({ error: "Session expired. Please sign in again.", reauth: true }, { status: 401 });
   }
+
+  if (!s.accessToken) {
+    return NextResponse.json({ error: "No access token. Please sign in again.", reauth: true }, { status: 401 });
+  }
+
+  const accessToken = s.accessToken;
   const guildsResult = await getGuilds(accessToken);
 
   if (!Array.isArray(guildsResult)) {

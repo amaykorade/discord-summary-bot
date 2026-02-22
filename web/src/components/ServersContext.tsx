@@ -15,6 +15,7 @@ interface ServersContextValue {
   servers: Server[];
   loading: boolean;
   error: string | null;
+  needsReauth: boolean;
   refresh: () => void;
 }
 
@@ -22,6 +23,7 @@ const ServersContext = createContext<ServersContextValue>({
   servers: [],
   loading: false,
   error: null,
+  needsReauth: false,
   refresh: () => {},
 });
 
@@ -30,14 +32,19 @@ export function ServersProvider({ children }: { children: React.ReactNode }) {
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsReauth, setNeedsReauth] = useState(false);
 
   const fetchServers = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setNeedsReauth(false);
     try {
       const r = await fetch("/api/servers", { cache: "no-store" });
       const data = await r.json();
       if (!r.ok) {
+        if (data?.reauth) {
+          setNeedsReauth(true);
+        }
         setError(data?.error ?? `Error ${r.status}`);
         setServers([]);
       } else {
@@ -56,13 +63,14 @@ export function ServersProvider({ children }: { children: React.ReactNode }) {
     if (!session) {
       setServers([]);
       setError(null);
+      setNeedsReauth(false);
       return;
     }
     fetchServers();
   }, [session, status, fetchServers]);
 
   return (
-    <ServersContext.Provider value={{ servers, loading, error, refresh: fetchServers }}>
+    <ServersContext.Provider value={{ servers, loading, error, needsReauth, refresh: fetchServers }}>
       {children}
     </ServersContext.Provider>
   );
