@@ -112,7 +112,6 @@ export default function DashboardPage() {
               Refresh
             </button>
           </div>
-          </div>
           <p className="mt-1 text-slate-400">
             Manage your Discord servers. Add the bot to more servers, then run{" "}
             <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm text-slate-300">/set-summary-channel</code>{" "}
