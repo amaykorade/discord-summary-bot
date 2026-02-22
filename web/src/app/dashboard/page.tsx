@@ -26,23 +26,33 @@ const DISCORD_ADD_URL = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (session && (session as { accessToken?: string }).accessToken) {
-      fetch("/api/servers")
-        .then((r) => r.json())
-        .then((data) => {
-          setServers(Array.isArray(data) ? data : []);
-        })
-        .catch(() => setServers([]))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [session]);
+    if (status === "loading") return;
+    if (!session) return;
 
-  if (status === "loading" || loading) {
+    setLoading(true);
+    setFetchError(null);
+    fetch("/api/servers")
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) {
+          setFetchError(data?.error ?? `Error ${r.status}`);
+          setServers([]);
+        } else {
+          setServers(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch((err) => {
+        setFetchError(err?.message ?? "Failed to load servers");
+        setServers([]);
+      })
+      .finally(() => setLoading(false));
+  }, [session, status]);
+
+  if (status === "loading" || (status === "authenticated" && loading)) {
     return (
       <div className="min-h-screen bg-slate-950">
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -123,6 +133,12 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        {fetchError && (
+          <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            Error loading servers: {fetchError}
+          </div>
+        )}
 
         {servers.length === 0 ? (
           <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-12 text-center sm:p-16">
