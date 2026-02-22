@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
     setLoading(true);
     setFetchError(null);
-    fetch("/api/servers")
+    fetch("/api/servers", { cache: "no-store" })
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) {
@@ -103,7 +103,16 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-950">
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Your Servers</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">Your Servers</h1>
+            <button
+              onClick={() => { setLoading(true); setFetchError(null); fetch("/api/servers", { cache: "no-store" }).then(async (r) => { const data = await r.json(); if (!r.ok) { setFetchError(data?.error ?? `Error ${r.status}`); setServers([]); } else { setServers(Array.isArray(data) ? data : []); } }).catch((err) => { setFetchError(err?.message ?? "Failed"); setServers([]); }).finally(() => setLoading(false)); }}
+              className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-400 hover:border-slate-500 hover:text-white transition"
+            >
+              Refresh
+            </button>
+          </div>
+          </div>
           <p className="mt-1 text-slate-400">
             Manage your Discord servers. Add the bot to more servers, then run{" "}
             <code className="rounded bg-slate-800 px-1.5 py-0.5 text-sm text-slate-300">/set-summary-channel</code>{" "}

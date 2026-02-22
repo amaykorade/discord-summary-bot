@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const DISCORD_API = "https://discord.com/api/v10";
 
 async function getGuilds(accessToken: string) {
